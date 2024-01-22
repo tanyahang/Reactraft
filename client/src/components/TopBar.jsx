@@ -23,6 +23,7 @@ import {
   AppBarButtonsStyleLight,
   AppBarButtonsStyleDark,
 } from '../styles/ThemeGlobal';
+import WeatherApp from './WeatherApp'
 
 export default function TopBar({ toggleDarkMode, darkMode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -40,8 +41,7 @@ export default function TopBar({ toggleDarkMode, darkMode }) {
   return (
     <AppBar display='flex' position='absolute'>
       <Toolbar
-        disableGutters={true}
-        to
+        disableGutters={true} 
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -67,6 +67,14 @@ export default function TopBar({ toggleDarkMode, darkMode }) {
           <SideDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
 
           <Typography fontSize='25px'>ReaCraft</Typography>
+        </Box>
+        <Box
+        width='40vw'
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-start',
+        }}>
+          Hello
         </Box>
         <Box
           sx={{
