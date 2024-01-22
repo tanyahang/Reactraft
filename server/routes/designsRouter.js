@@ -31,6 +31,7 @@ router.post(
   imageController.deleteImage,
   imageController.uploadImage,
   designController.updateDesign,
+  rectangleController.updateRootRectangle,
   sendDesign
 );
 
@@ -50,13 +51,17 @@ router.delete(
   componentController.deleteDesignComponents,
   designController.deleteDesign,
   imageController.deleteImage,
-  (req, res) => res.status(200).send({})
+  (req, res) => res.status(200).send({ message: 'deleted design successfully' })
 );
 
 router.post(
   '/new-component/:designId',
   componentController.addNewComponent,
   rectangleController.createComponentRectangle,
+  (req, res, next) => {
+    console.log(res.locals.component);
+    return next();
+  },
   (req, res) => res.status(200).send(res.locals.component)
 );
 

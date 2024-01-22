@@ -6,32 +6,49 @@ import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux';
-import { getDesignDetails } from '../../utils/reducers/designSliceV2';
+import {
+  getDesignDetails,
+  setSearchTerm,
+} from '../../utils/reducers/designSliceV2';
 import EditableText from '../userInputs/EditableText';
+import Paper from '@mui/material/Paper';
+import { setMessage } from '../../utils/reducers/appSlice';
 
-export default function DesignCard({ design }) {
+export default function DesignCard({ design, setLocalSelectedDesignId }) {
   const dispatch = useDispatch();
   const created_at = new Date(design.created_at).toLocaleDateString();
   const last_updated = new Date(design.last_updated).toLocaleDateString();
-  console.log('design is', design);
+
+  const handleViewDesign = async () => {
+    try {
+      dispatch(getDesignDetails(design._id));
+      // resets the search term in redux state
+      dispatch(setSearchTerm(''));
+    } catch (err) {
+      dispatch(
+        setMessage({
+          severity: 'error',
+          text: 'Design: view past design detail ' + err,
+        })
+      );
+    }
+  };
 
   return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Paper sx={{ maxWidth: 345 }} elevation={3} square={false}>
       <CardMedia
         align='center'
+        align='center'
         sx={{
+          borderRadius: '5px',
           height: 140,
+          boxShadow: '0px 15px 200px -9px #5B5B5B',
         }}
         image={design.image_url}
         title={design.title}
       />
       <CardContent name='CardContent_DesignCard'>
-        <EditableText
-          designId={design._id}
-          initialText={design.title}
-          fontSize='40px'
-          align='center'
-        />
+        <EditableText initialText={design.title} align='center' />
         <Typography gutterBottom variant='h5' component='div'></Typography>
         <Typography
           sx={{
@@ -65,17 +82,18 @@ export default function DesignCard({ design }) {
         <Button
           size='small'
           variant='outlined'
-          onClick={async () => {
-            try {
-              dispatch(getDesignDetails(design._id));
-            } catch (err) {
-              console.log('error: ' + err);
-            }
-          }}
+          onClick={handleViewDesign}
+          //   async () => {
+          //   try {
+          //     dispatch(getDesignDetails(design._id));
+          //   } catch (err) {
+          //     console.log('error: ' + err);
+          //   }
+          // }}
         >
           View design
         </Button>
       </CardActions>
-    </Card>
+    </Paper>
   );
 }

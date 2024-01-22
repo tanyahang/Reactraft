@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { Fragment, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+/* MUI Material Imports */
+
 import AppBar from '@mui/material/AppBar';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import BackupTableIcon from '@mui/icons-material/BackupTable';
 import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material';
 
-import SideDrawer from './SideDrawer';
-import UserMenu from './functionalButtons/UserMenu';
-import DarkModeSwitch from './functionalButtons/DarkModeSwitch';
+/* MUI Icon Imports */
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import Padding from '@mui/icons-material';
 
+import DarkModeSwitch from './functionalButtons/DarkModeSwitch';
+import DeleteDesignButton from './functionalButtons/DeleteDesignButton';
+import DesignTitleInput from './userInputs/DesignTitleInput';
+import PanToolButton from './functionalButtons/PanHandButton';
+import UserImageUpload from './functionalButtons/UserImageUploadButton';
+import UserMenu from './functionalButtons/UserMenu';
+import SideDrawer from './SideDrawer';
+import ViewKeyboardShortcut from './functionalButtons/ViewKeyboardShortcut';
 import { goToPage } from '../utils/reducers/appSlice';
 import { resetDesign } from '../utils/reducers/designSliceV2';
 import { useAuth } from '../hooks/useAuth';
@@ -25,25 +35,41 @@ import {
 } from '../styles/ThemeGlobal';
 import WeatherApp from './WeatherApp'
 
-export default function TopBar({ toggleDarkMode, darkMode }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+export default function TopBar({
+  toggleDarkMode,
+  darkMode,
+  drawerOpen,
+  setDrawerOpen,
+}) {
   const dispatch = useDispatch();
   function handlePageClick(page) {
     dispatch(goToPage(page));
     dispatch(resetDesign());
   }
+
+  const designId = useSelector((state) => state.designV2._id);
+
   const { user } = useAuth();
   const theme = useTheme();
+
+  //GlobalTheme Light/Dark Mode Switch
   const AppBarButtonsStyle =
     theme.palette.mode === 'dark'
       ? AppBarButtonsStyleDark
       : AppBarButtonsStyleLight;
+
+  function handlePageClick(page) {
+    dispatch(goToPage(page));
+    dispatch(resetDesign());
+  }
+
   return (
-    <AppBar display='flex' position='absolute'>
+    <AppBar display='block' position='fixed' height='56px'>
       <Toolbar
-        disableGutters={true} 
+        disableGutters={true}
         sx={{
           display: 'flex',
+          height: '56px',
           justifyContent: 'space-between',
           backgroundColor: 'transparent',
         }}
@@ -55,27 +81,29 @@ export default function TopBar({ toggleDarkMode, darkMode }) {
             alignItems: 'center',
           }}
         >
-          <Button
-            variant='contained'
-            size='large'
-            disableElevation
-            onClick={() => setDrawerOpen(!drawerOpen)}
-            sx={AppBarButtonsStyle}
-          >
-            <MenuIcon />
-          </Button>
-          <SideDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-
+          {!designId && (
+            <Fragment>
+              <Button
+                variant='contained'
+                size='large'
+                disableElevation
+                onClick={() => setDrawerOpen(!drawerOpen)}
+                sx={AppBarButtonsStyle}
+              >
+                <MenuIcon />
+              </Button>
+              <SideDrawer
+                drawerOpen={drawerOpen}
+                setDrawerOpen={setDrawerOpen}
+              />
+            </Fragment>
+          )}
           <Typography fontSize='25px'>ReaCraft</Typography>
+          <DesignTitleInput />
         </Box>
-        <Box
-        width='40vw'
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-        }}>
-          Hello
-        </Box>
+        <Tooltip title='Delete Current Project'>
+          {/* <DeleteDesignButton designId={_id} /> */}
+        </Tooltip>
         <Box
           sx={{
             display: 'flex',
@@ -83,20 +111,6 @@ export default function TopBar({ toggleDarkMode, darkMode }) {
             alignItems: 'center',
           }}
         >
-          <DarkModeSwitch
-            size='xs'
-            toggleDarkMode={toggleDarkMode}
-            darkMode={darkMode}
-          />
-
-          <Button
-            variant='contained'
-            disableElevation
-            onClick={() => handlePageClick('HOME')}
-            sx={AppBarButtonsStyle}
-          >
-            <HomeIcon />
-          </Button>
           <Button
             variant='contained'
             disableElevation
@@ -111,7 +125,31 @@ export default function TopBar({ toggleDarkMode, darkMode }) {
           >
             New Design
           </Button>
-          {user && <UserMenu />}
+          <PanToolButton />
+          <ViewKeyboardShortcut
+            sx={{ position: 'absolute', justifySelf: 'end' }}
+          />
+          <UserImageUpload height='64px' />
+          <DarkModeSwitch
+            size='xs'
+            toggleDarkMode={toggleDarkMode}
+            darkMode={darkMode}
+          />
+
+          <Tooltip title='Home Button'>
+            <IconButton
+              variant='contained'
+              disableElevation
+              onClick={() => handlePageClick('HOME')}
+              width='30px'
+              size='sm'
+            >
+              <HomeIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title='User Settings Dropdown'>
+            {user && <UserMenu />}
+          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>

@@ -1,28 +1,9 @@
 const db = require('../models/dbModel');
 
-const addDesign = (req, res, next) => {
-  const { userId, onlineImageUrl } = res.locals;
-  const { title } = req.body;
-  return db
-    .query(
-      'INSERT INTO designs (user_id, image_url, title) ' +
-        'VALUES( $1, $2, $3) ' +
-        'RETURNING *;',
-      [userId, onlineImageUrl, title]
-    )
-    .then((data) => (res.locals.designId = data.rows[0]._id))
-    .then(() => next())
-    .catch((err) =>
-      next({
-        log:
-          'Express error handler caught designController.addDesign middleware error' +
-          err,
-        message: { err: 'addDesign: ' + err },
-      })
-    );
-};
-
+//handle add new design
 const addNewDesign = (req, res, next) => {
+  // userId from cookieController.decryptCookie
+  // onlineImageUrl from imageController.uploadImage
   const { userId, onlineImageUrl } = res.locals;
   return db
     .query(
@@ -32,11 +13,11 @@ const addNewDesign = (req, res, next) => {
       [userId, onlineImageUrl]
     )
     .then((data) => (res.locals.design = data.rows[0]))
-    .then(() => next())
+    .then(() => next()) //next middleware is componentController.createRootComponent
     .catch((err) =>
       next({
         log:
-          'Express error handler caught designController.addDesign middleware error' +
+          'Express error handler caught designController.addNewDesign middleware error' +
           err,
         message: { err: 'addDesign: ' + err },
       })
@@ -89,6 +70,10 @@ const deleteDesign = (req, res, next) => {
   return db
     .query('DELETE FROM designs WHERE _id = $1 RETURNING *;', [designId])
     .then((data) => {
+      console.log(
+        'in designController.deleteDesign, the design deleted is ',
+        data.rows[0]
+      );
       const image_url = new URL(data.rows[0].image_url);
       res.locals.imageToDelete = image_url.pathname.slice(1);
       return next();
@@ -96,9 +81,9 @@ const deleteDesign = (req, res, next) => {
     .catch((err) =>
       next({
         log:
-          'Express error handler caught componentController.deleteDesignComponents middleware error' +
+          'Express error handler caught designController.deleteDesign middleware error' +
           err,
-        message: { err: 'deleteDesignComponents: ' + err },
+        message: { err: 'deleteDesign: ' + err },
       })
     );
 };
@@ -122,7 +107,6 @@ const getDesignById = (req, res, next) => {
 };
 
 module.exports = {
-  addDesign,
   getDesigns,
   deleteDesign,
   addNewDesign,

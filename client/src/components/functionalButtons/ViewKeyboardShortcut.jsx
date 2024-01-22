@@ -1,17 +1,19 @@
 import React, { Fragment, useState } from 'react';
+
 import KeyboardIcon from '@mui/icons-material/Keyboard';
+import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-
-import BackdropSnackbar from './BackdropSnackbar';
 import Backdrop from '@mui/material/Backdrop';
-
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
+import Box from '@mui/material/Box';
 
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import {
   TbSquareLetterT,
   TbSquareLetterD,
@@ -19,14 +21,20 @@ import {
   TbSquareLetterS,
 } from 'react-icons/tb';
 
+import BackdropSnackbar from './BackdropSnackbar';
 import '../../styles/keyboardShortcut.scss';
 
 export default function ViewKeyboardShortcut() {
   const [open, setOpen] = useState(false);
   return (
     <Fragment>
-      <Tooltip title='View keyboard shortcuts'>
-        <IconButton onClick={() => setOpen(true)}>
+      <Tooltip title='View keyboard Shortcuts Button'>
+        <IconButton
+          size='small'
+          component='label'
+          variant='contained'
+          onClick={() => setOpen(true)}
+        >
           <KeyboardIcon />
         </IconButton>
       </Tooltip>
@@ -50,8 +58,10 @@ function ShortcutBackdrop({ open, setOpen }) {
     >
       <List className='keyboard-shortcuts'>
         <ListItem className='shortcut'>
-          <ListItemIcon>esc</ListItemIcon>
-          <ListItemText>Exit full screen</ListItemText>
+          <ListItemIcon sx={{ color: 'white' }}>esc</ListItemIcon>
+          <ListItemText sx={{ marginLeft: '10px' }}>
+            Exit full screen
+          </ListItemText>
         </ListItem>
 
         <Shortcut
@@ -65,7 +75,7 @@ function ShortcutBackdrop({ open, setOpen }) {
           text='Select Previous Component'
         />
         <Shortcut
-          icon={<TbSquareLetterW size='20px' />}
+          icon={<TbSquareLetterS size='20px' />}
           text='Select Next Component'
         />
       </List>
@@ -78,8 +88,11 @@ function Shortcut({ icon, text }) {
     <Fragment>
       <Divider />
       <ListItem className='shortcut'>
-        <ListItemIcon>{icon}</ListItemIcon>
-        <ListItemText>{text}</ListItemText>
+        <Stack direction='row'>
+          <Typography>alt + </Typography>
+          {icon}
+        </Stack>
+        <ListItemText sx={{ marginLeft: '10px' }}>{text}</ListItemText>
       </ListItem>
     </Fragment>
   );

@@ -11,14 +11,9 @@ import { setMessage } from '../../utils/reducers/appSlice';
 import isValidVariableName from '../../utils/isValidVariableName';
 import Button from '@mui/material/Button';
 import HtmlTagSelector from './HtmlTagSelector';
-import {
-  convertArrToObj,
-  convertObjToArr,
-} from '../../utils/convertBetweenObjArr';
-import {
-  deleteComponent,
-  submitComponentForm,
-} from '../../utils/reducers/designSliceV2';
+import { convertArrToObj } from '../../utils/convertBetweenObjArr';
+import { submitComponentForm } from '../../utils/reducers/designSliceV2';
+import Tooltip from '@mui/material/Tooltip';
 
 const boxStyle = {
   position: 'absolute',
@@ -31,6 +26,34 @@ const boxStyle = {
   boxShadow: 24,
   p: 4,
 };
+
+const basicCssProperties = [
+  'border',
+  'color',
+  'font-size',
+  'font-style',
+  'font-weight',
+  'line-height',
+  'margin',
+  'margin-bottom',
+  'margin-left',
+  'margin-right',
+  'margin-top',
+  'padding',
+  'padding-bottom',
+  'padding-left',
+  'padding-right',
+  'padding-top',
+  'text-align',
+  'text-decoration',
+  'word-spacing',
+  'letter-spacing',
+  'overflow',
+  'box-shadow',
+  'text-shadow',
+  'cursor',
+];
+
 export default function ComponentEditorForm({
   idx,
   open,
@@ -40,12 +63,8 @@ export default function ComponentEditorForm({
   const dispatch = useDispatch();
   const component = useSelector((state) => state.designV2.components)[idx];
 
-  const [props, setProps] = useState(
-    convertObjToArr(JSON.parse(component.props))
-  );
-  const [styles, setStyles] = useState(
-    convertObjToArr(JSON.parse(component.styles))
-  );
+  const [props, setProps] = useState(component.props);
+  const [styles, setStyles] = useState(component.styles);
 
   const deleteMessage = isLeaf
     ? {
@@ -78,7 +97,7 @@ export default function ComponentEditorForm({
       } catch (err) {
         setMessage({
           severity: 'error',
-          text: 'Saving component: ' + err,
+          text: 'Design: update component: ' + err,
         });
       }
     } else {
@@ -100,7 +119,8 @@ export default function ComponentEditorForm({
         display='grid'
         gridTemplateColumns='repeat(12, 1fr)'
         gap={2}
-        onSubmit={handleSumbit}>
+        onSubmit={handleSumbit}
+      >
         <NameAndParent idx={idx} name={component.name} />
 
         {isLeaf && (
@@ -130,7 +150,8 @@ export default function ComponentEditorForm({
                   closeEditor();
                 }
                 dispatch(setMessage(deleteMessage));
-              }}>
+              }}
+            >
               Delete
             </Button>
           )}
@@ -196,15 +217,21 @@ function HtmlData({ idx, isLeaf, innerHtml }) {
 
 function AddData({ data, setData, dataName }) {
   const keys = data.map((item) => item.key);
-  const dispatch = useDispatch();
+  const title =
+    dataName === 'Props'
+      ? 'You can specify your component props in key-value pairs. '
+      : 'You can specify some basic html in key-value pairs.';
 
   return (
     <Fragment>
       <Typography variant='h5'>{dataName}</Typography>
       <Box gridColumn='span 12' display='flex'>
-        <Typography variant='h6' sx={{ mr: 2 }}>
-          Add {dataName}
-        </Typography>
+        <Tooltip title={title}>
+          <Typography variant='h6' sx={{ mr: 2 }}>
+            Add {dataName}
+          </Typography>
+        </Tooltip>
+
         <IconButton
           onClick={() =>
             setData([
@@ -216,51 +243,20 @@ function AddData({ data, setData, dataName }) {
                 value: '',
               },
             ])
-          }>
+          }
+        >
           <AddCircleIcon color='primary' />
         </IconButton>
       </Box>
       {data.map((item, idx) => (
         <Fragment key={idx}>
           <Box gridColumn='span 5'>
-            <TextField
-              required
-              label='key'
-              id={`key${idx}`}
-              name={`${dataName.toLowerCase()}-${item.key}-key`}
-              value={item.key}
-              onChange={(e) => {
-                const duplicateErr = {
-                  severity: 'error',
-                  text: `Invalid prop key: ${e.target.value} has already been declared.`,
-                };
-                const invalidErr = {
-                  severity: 'error',
-                  text: `Invalid prop key: ${e.target.value} is not a valid Javascript variable name.`,
-                };
-                const emptyErr = {
-                  severity: 'error',
-                  text: `Props key cannot be empty.`,
-                };
-                let message;
-                if (e.target.value.length > 0 && keys.includes(e.target.value))
-                  message = duplicateErr;
-                else if (
-                  !isValidVariableName(e.target.value) &&
-                  e.target.value.length > 0
-                )
-                  message = invalidErr;
-                else if (e.target.value.length === 0) message = emptyErr;
-                else {
-                  setData(
-                    data.map((el, i) =>
-                      i === idx ? { ...el, key: e.target.value } : el
-                    )
-                  );
-                }
-
-                dispatch(setMessage(message));
-              }}
+            <PropsTextField
+              idx={idx}
+              item={item}
+              setData={setData}
+              keys={keys}
+              data={data}
             />
           </Box>
           <Box gridColumn='span 5'>
@@ -282,7 +278,8 @@ function AddData({ data, setData, dataName }) {
             <IconButton
               onClick={() => {
                 setData(data.filter((_, i) => i !== idx));
-              }}>
+              }}
+            >
               <RemoveCircleIcon />
             </IconButton>
           </Box>
@@ -294,3 +291,50 @@ function AddData({ data, setData, dataName }) {
     </Fragment>
   );
 }
+
+function PropsTextField({ idx, item, setData, keys, data }) {
+  const dispatch = useDispatch();
+  return (
+    <TextField
+      required
+      label='key'
+      id={`key${idx}`}
+      name={`props-${item.key}-key`}
+      value={item.key}
+      onChange={(e) => {
+        const duplicateErr = {
+          severity: 'error',
+          text: `Invalid prop key: ${e.target.value} has already been declared.`,
+        };
+        const invalidErr = {
+          severity: 'error',
+          text: `Invalid prop key: ${e.target.value} is not a valid Javascript variable name.`,
+        };
+        const emptyErr = {
+          severity: 'error',
+          text: `Props key cannot be empty.`,
+        };
+        let message;
+        if (e.target.value.length > 0 && keys.includes(e.target.value))
+          message = duplicateErr;
+        else if (
+          !isValidVariableName(e.target.value) &&
+          e.target.value.length > 0
+        )
+          message = invalidErr;
+        else if (e.target.value.length === 0) message = emptyErr;
+        else {
+          setData(
+            data.map((el, i) =>
+              i === idx ? { ...el, key: e.target.value } : el
+            )
+          );
+        }
+
+        dispatch(setMessage(message));
+      }}
+    />
+  );
+}
+
+function StylesTextField({ idx, item, setData }) {}

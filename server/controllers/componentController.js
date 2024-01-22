@@ -1,6 +1,8 @@
 const db = require('../models/dbModel');
 
+// Create a default RootContainer component for a new design
 const createRootComponent = (req, res, next) => {
+  // designId from designController.addNewDesign
   const designId = res.locals.design._id;
   return db
     .query(
@@ -11,7 +13,7 @@ const createRootComponent = (req, res, next) => {
     )
     .then((data) => {
       res.locals.design.components = [data.rows[0]];
-      return next();
+      return next(); // next middleware is rectangleController.createRootRectangle
     })
     .catch((err) =>
       next({
@@ -61,13 +63,13 @@ const deleteDesignComponents = (req, res, next) => {
   const designId = req.params.designId;
   return db
     .query('DELETE FROM components WHERE design_id = $1;', [designId])
-    .then((data) => next())
+    .then(() => next())
     .catch((err) =>
       next({
         log:
-          'Express error handler caught componentController.selectDesignComponentsToDelete middleware error' +
+          'Express error handler caught componentController.deleteDesignComponents middleware error' +
           err,
-        message: { err: 'selectDesignComponentsToDelete: ' + err },
+        message: { err: 'deleteDesignComponents: ' + err },
       })
     );
 };

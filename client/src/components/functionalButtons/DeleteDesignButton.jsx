@@ -4,6 +4,9 @@ import { deleteDesign } from '../../utils/fetchRequests';
 import { setMessage } from '../../utils/reducers/appSlice';
 import Delete from '@mui/icons-material/Delete';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,7 +20,7 @@ export default function DeleteDesignButton({ designId }) {
   const handleClose = () => setOpen(false);
 
   const handleKeyPress = (e) => {
-    if (e.key === 'd' || e.key === 'D') setOpen(true);
+    if (e.altKey && e.keyCode === 68) setOpen(true);
   };
 
   useEffect(() => {
@@ -29,14 +32,9 @@ export default function DeleteDesignButton({ designId }) {
 
   return (
     <Fragment>
-      <Button
-        variant='contained'
-        color='error'
-        startIcon={<Delete />}
-        onClick={() => setOpen(true)}
-      >
-        Delete
-      </Button>
+      <IconButton size='small' onClick={() => setOpen(true)}>
+        <Delete />
+      </IconButton>
       <Dialog open={open} onClose={handleClose}>
         <DialogContent>
           <DialogContentText id='alert-dialog-description'>
@@ -56,10 +54,11 @@ export default function DeleteDesignButton({ designId }) {
                 );
                 dispatch(resetDesign());
               } catch (err) {
+                console.log(err);
                 dispatch(
                   setMessage({
                     severity: 'error',
-                    text: 'Delete failed' + err,
+                    text: 'Design: delete design ' + err,
                   })
                 );
               }
